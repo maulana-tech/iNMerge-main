@@ -6,7 +6,10 @@ export const env = createEnv({
    * Serverside Environment variables, not available on the client.
    * Will throw if you access these variables on the client.
    */
-  server: {},
+  server: {
+    NVIDIA_API_KEY: z.string().min(1).optional(),
+    NVIDIA_MODEL: z.string().optional(),
+  },
   /*
    * Environment variables available on the client (and server).
    *
@@ -24,6 +27,8 @@ export const env = createEnv({
    * 💡 You'll get type errors if not all variables from `server` & `client` are included here.
    */
   runtimeEnv: {
+    NVIDIA_API_KEY: process.env.NVIDIA_API_KEY,
+    NVIDIA_MODEL: process.env.NVIDIA_MODEL,
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
       process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
     NEXT_PUBLIC_ISSUE_ADDRESS: process.env.NEXT_PUBLIC_ISSUE_ADDRESS,
