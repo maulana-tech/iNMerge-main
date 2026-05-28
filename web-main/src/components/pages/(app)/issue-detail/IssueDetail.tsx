@@ -15,6 +15,7 @@ import GithubAuthSection from "./GithubAuthSection";
 import IssueDescription from "./IssueDescription";
 import HorizontalValidationResults from "./HorizontalValidationResults";
 import GeneratingProofPopup from "./GeneratingProofPopup";
+import SolveWithAISection from "./SolveWithAISection";
 import TimerIssue from "@/components/TimerIssue";
 
 export default function IssueDetail() {
@@ -170,7 +171,9 @@ export default function IssueDetail() {
           />
           
           <IssueDescription issueDetails={issueDetails} />
-          
+
+          <SolveWithAISection issueDetails={issueDetails} issueId={issueId} />
+
           <HorizontalValidationResults
             proof={proof}
             validationResults={validationResults}
