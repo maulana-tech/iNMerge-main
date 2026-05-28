@@ -1,0 +1,28 @@
+{
+  "name": "inmerg-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "worker": "tsx src/worker/index.ts",
+    "orchestrator": "tsx src/orchestrator/index.ts",
+    "dev:worker": "tsx watch src/worker/index.ts",
+    "dev:orchestrator": "tsx watch src/orchestrator/index.ts"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.0.2",
+    "openai": "^4.77.0",
+    "viem": "^2.22.17",
+    "zod": "^3.24.1",
+    "dotenv": "^16.4.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
