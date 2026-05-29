@@ -90,9 +90,9 @@ Verification: `./FLATTEN.sh` → flatten to `flattened/` → `forge verify-contr
 
 | Contract | Address |
 |---|---|
-| MantleUSD | `0x5ab8ddE10e31d503C5db1D734ca64dD2e0066d72` |
-| IssuesClaimWithAVS | `0x836112Af92dCA17D5a45d3b4Fc7E490eC6b4B36e` |
-| INMergAVS | `0x9d507b8c972ee303773Bd409cd56Ed1b37D67a10` |
+| MantleUSD | `0x6d4d017dE8d0A36dce7856Ee989624C6A18cD9Ea` |
+| IssuesClaimWithAVS | `0xD04A92C83AFe71f4f69F9FAD0A33229BFBdE33E6` |
+| INMergAVS | `0x44b99f76f12e0Ece22f6bD76DcB305Afcf25876D` |
 
 RPC: `https://rpc.sepolia.mantle.xyz`
 Explorer: `https://explorer.sepolia.mantle.xyz`
