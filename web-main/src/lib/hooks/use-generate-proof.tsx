@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { UseGenerateProofReturn } from "@/utils/types";
 
@@ -52,6 +52,14 @@ export const useGenerateProof = (): UseGenerateProofReturn => {
       abortControllerRef.current = null;
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const cancelGeneration = () => {
     if (abortControllerRef.current) {
