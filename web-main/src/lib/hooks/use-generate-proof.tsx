@@ -21,7 +21,7 @@ export const useGenerateProof = (): UseGenerateProofReturn => {
     
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_ZK_BACKEND_GENERATE_PROOF}?url=${encodeURIComponent(
+        `${process.env.NEXT_PUBLIC_GEN_PROOF}?url=${encodeURIComponent(
           pullRequestUrl
         )}`,
         {

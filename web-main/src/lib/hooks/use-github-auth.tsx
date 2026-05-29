@@ -40,7 +40,7 @@ export const useGithubAuth = (onLogout?: () => void): UseGithubAuthReturn => {
         
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_ZK_BACKEND_GET_ACCESS_TOKEN}?code=${codeParam}`,
+            `${process.env.NEXT_PUBLIC_GET_TOKEN}?code=${codeParam}`,
             {
               method: "GET",
             }
