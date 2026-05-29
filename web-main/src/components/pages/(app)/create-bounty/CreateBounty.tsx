@@ -1,12 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useCreateIssue } from "@/lib/hooks/use-create-issue";
 import { useWallet } from "@/lib/hooks/use-wallet";
+import { useBalance } from "@/lib/hooks/use-balance";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import CornerLayout from "./CornerLayout";
 import WalletConnectSection from "./WalletConnectSection";
 import CreateBountyForm from "./CreateBountyForm";
 import IssuePreview from "./IssuePreview";
+
+const DEMO_DATA = {
+  title: "Add dark mode support",
+  repoLink: "https://github.com/username/project",
+  description: "Implement a dark mode theme toggle for the user dashboard. The feature should include a toggle button in the header, persist user preference in localStorage, and use Tailwind CSS dark mode classes.",
+  bountyAmount: "100",
+  maxClaims: "3",
+};
 
 export default function CreateBounty() {
   const {
@@ -17,6 +28,7 @@ export default function CreateBounty() {
     isApprovalConfirming,
   } = useCreateIssue();
   const { address } = useWallet();
+  const { MantleUSDCBalance } = useBalance(address || "");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -34,6 +46,19 @@ export default function CreateBounty() {
     isApprovalPending ||
     isCreateIssueConfirming ||
     isApprovalConfirming;
+
+  const fillDemoData = useCallback(() => {
+    const deadline = new Date();
+    deadline.setDate(deadline.getDate() + 30);
+    setFormData({
+      title: DEMO_DATA.title,
+      repoLink: DEMO_DATA.repoLink,
+      description: DEMO_DATA.description,
+      deadline,
+      bountyAmount: DEMO_DATA.bountyAmount,
+      maxClaims: DEMO_DATA.maxClaims,
+    });
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -96,6 +121,10 @@ export default function CreateBounty() {
     );
   }
 
+  const formattedBalance = MantleUSDCBalance
+    ? (Number(MantleUSDCBalance) / 1e18).toFixed(2)
+    : "0.00";
+
   return (
     <CornerLayout>
       <div className="bg-white overflow-hidden border-t border-gray-300">
@@ -115,6 +144,32 @@ export default function CreateBounty() {
             <p className="text-gray-600 max-w-2xl mx-auto">
               Create a bounty issue for your open source project and reward contributors for their valuable contributions.
             </p>
+          </div>
+
+          <div className="flex items-center justify-between max-w-6xl mx-auto mb-6">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Image
+                src="/images/Logo/mantle-usd-logo.webp"
+                alt="mUSD"
+                width={18}
+                height={18}
+              />
+              Balance: <span className="font-semibold text-gray-900">{formattedBalance} mUSD</span>
+              {Number(formattedBalance) <= 0 && (
+                <Link href="/faucet" className="text-blue-600 hover:underline ml-1">
+                  (get tokens)
+                </Link>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={fillDemoData}
+                className="bg-blue-600 text-white hover:bg-blue-700 border-0 cursor-pointer text-sm px-4 py-2"
+              >
+                Fill Demo Data
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 max-w-6xl mx-auto">
