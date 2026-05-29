@@ -2,6 +2,7 @@ import "dotenv/config";
 import { privateKeyToAccount } from "viem/accounts";
 import { getAllIssues, claimReward, type OnChainIssue } from "../lib/contract.js";
 import { solveIssue, refineWithFileContent } from "./solver.js";
+import { startServer } from "../server/index.js";
 import {
   forkRepo,
   createBranch,
@@ -164,6 +165,7 @@ process.on("unhandledRejection", (reason) => {
 
 // ── main ──────────────────────────────────────────────────────────────────────
 async function main() {
+  startServer();
   log("iNMerg Worker Agent started");
   log(`Model: ${process.env.NVIDIA_MODEL ?? "meta/llama-3.3-70b-instruct"}`);
   log(`Wallet: ${WORKER_ADDRESS}`);
