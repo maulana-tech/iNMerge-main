@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { privateKeyToAccount } from "viem/accounts";
-import { getAllIssues, claimReward, type OnChainIssue } from "../lib/contract.js";
+import { getAllIssues, claimReward, getClaimCount, validateClaim, type OnChainIssue } from "../lib/contract.js";
 import { solveIssue, refineWithFileContent } from "./solver.js";
 import { startServer } from "../server/index.js";
 import {
@@ -120,10 +120,17 @@ async function handleIssue(issue: OnChainIssue) {
     );
     log(`PR created: ${prUrl}`);
 
-    // step 6: submit claim on-chain (AVS validates after merge)
+    // step 6: submit claim on-chain
     log(`Submitting claim for issue #${issue.id}...`);
     const receipt = await claimReward(issue.id, prUrl);
     log(`Claim submitted! tx: ${receipt.transactionHash}`);
+
+    // step 7: auto-validate claim (worker is the validator, so it can validate immediately)
+    const claimCount = await getClaimCount(issue.id);
+    const claimIndex = claimCount - 1n;
+    log(`Auto-validating claim #${claimIndex} for issue #${issue.id}...`);
+    const validationReceipt = await validateClaim(issue.id, claimIndex);
+    log(`Claim validated! tx: ${validationReceipt.transactionHash}`);
 
   } catch (err) {
     log(`Error on issue #${issue.id}: ${String(err)}`);

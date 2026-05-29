@@ -22,6 +22,7 @@ const ISSUE_ABI = parseAbi([
   "function getAllIssues() view returns ((uint256 id, string githubProjectId, uint256 bountyAmount, string projectName, string description, string repoLink, uint256 deadline, bool isOpen, address owner, uint256 maxClaims, uint256 currentClaims)[])",
   "function getIssueDetails(uint256 _issueId) view returns ((uint256 id, string githubProjectId, uint256 bountyAmount, string projectName, string description, string repoLink, uint256 deadline, bool isOpen, address owner, uint256 maxClaims, uint256 currentClaims))",
   "function claimReward(uint256 _issueId, string _prLink, bool _isMerged, string _accessToken) nonpayable",
+  "function validateClaim(uint256 _issueId, uint256 _claimIndex, bool _isValid) nonpayable",
   "function claims(uint256, uint256) view returns (string prLink, bool isMerged, address developer, bool isValidated, uint256 timestamp, string accessToken)",
   "function claimCounts(uint256) view returns (uint256)",
 ]);
@@ -62,6 +63,29 @@ export async function claimReward(
     abi: ISSUE_ABI,
     functionName: "claimReward",
     args: [issueId, prLink, true, accessToken],
+  });
+  return publicClient.waitForTransactionReceipt({ hash });
+}
+
+export async function getClaimCount(issueId: bigint): Promise<bigint> {
+  return publicClient.readContract({
+    address: ISSUE_ADDRESS,
+    abi: ISSUE_ABI,
+    functionName: "claimCounts",
+    args: [issueId],
+  }) as Promise<bigint>;
+}
+
+export async function validateClaim(
+  issueId: bigint,
+  claimIndex: bigint
+) {
+  const wallet = getWalletClient();
+  const hash = await wallet.writeContract({
+    address: ISSUE_ADDRESS,
+    abi: ISSUE_ABI,
+    functionName: "validateClaim",
+    args: [issueId, claimIndex, true],
   });
   return publicClient.waitForTransactionReceipt({ hash });
 }
