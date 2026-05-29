@@ -19,6 +19,9 @@ export const env = createEnv({
     NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1),
     NEXT_PUBLIC_ISSUE_ADDRESS: z.string().min(1),
     NEXT_PUBLIC_MANTLEUSD_ADDRESS: z.string().min(1),
+    NEXT_PUBLIC_GITHUB_CLIENT_ID: z.string().min(1),
+    NEXT_PUBLIC_ZK_BACKEND_GET_ACCESS_TOKEN: z.string().min(1),
+    NEXT_PUBLIC_ZK_BACKEND_GENERATE_PROOF: z.string().min(1),
   },
   /*
    * Due to how Next.js bundles environment variables on Edge and Client,
@@ -33,5 +36,11 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
     NEXT_PUBLIC_ISSUE_ADDRESS: process.env.NEXT_PUBLIC_ISSUE_ADDRESS,
     NEXT_PUBLIC_MANTLEUSD_ADDRESS: process.env.NEXT_PUBLIC_MANTLEUSD_ADDRESS,
+    NEXT_PUBLIC_GITHUB_CLIENT_ID:
+      process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID,
+    NEXT_PUBLIC_ZK_BACKEND_GET_ACCESS_TOKEN:
+      process.env.NEXT_PUBLIC_ZK_BACKEND_GET_ACCESS_TOKEN,
+    NEXT_PUBLIC_ZK_BACKEND_GENERATE_PROOF:
+      process.env.NEXT_PUBLIC_ZK_BACKEND_GENERATE_PROOF,
   },
 });
