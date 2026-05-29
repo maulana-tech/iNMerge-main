@@ -116,11 +116,11 @@ export const useGithubAuth = (onLogout?: () => void): UseGithubAuthReturn => {
   }, []);
 
   const loginWithGithub = () => {
+    const redirectUri = `${window.location.origin}/github/callback`;
     window.location.assign(
-      `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}`
+      `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}`
     );
     toast.warning("Please complete GitHub authentication in the new window");
-    
   };
 
   const logout = () => {
