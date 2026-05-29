@@ -5,6 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@10.0.0",
   "scripts": {
+    "start": "tsx src/worker/index.ts",
     "worker": "tsx src/worker/index.ts",
     "orchestrator": "tsx src/orchestrator/index.ts",
     "dev:worker": "tsx watch src/worker/index.ts",

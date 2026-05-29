@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { privateKeyToAccount } from "viem/accounts";
 import { getAllIssues, claimReward, type OnChainIssue } from "../lib/contract.js";
 import { solveIssue, refineWithFileContent } from "./solver.js";
 import {
@@ -11,10 +12,27 @@ import {
   parseRepoUrl,
 } from "../lib/github.js";
 
-const WORKER_ADDRESS = process.env.WORKER_ADDRESS?.toLowerCase() ?? "";
+// ── env validation ────────────────────────────────────────────────────────────
+const REQUIRED_VARS = [
+  "NVIDIA_API_KEY",
+  "GITHUB_TOKEN",
+  "WORKER_PRIVATE_KEY",
+  "ISSUE_ADDRESS",
+  "MANTLEUSD_ADDRESS",
+] as const;
+
+for (const key of REQUIRED_VARS) {
+  if (!process.env[key]) {
+    console.error(`[worker] FATAL: missing required env var: ${key}`);
+    process.exit(1);
+  }
+}
+
+const account = privateKeyToAccount(process.env.WORKER_PRIVATE_KEY as `0x${string}`);
+const WORKER_ADDRESS = account.address.toLowerCase();
 const POLL_INTERVAL = Number(process.env.POLL_INTERVAL_MS ?? 30_000);
 
-// track issues we already attempted in this session
+// track issues attempted this session (resets on restart — acceptable, contract rejects duplicates)
 const attempted = new Set<string>();
 
 function log(msg: string) {
@@ -29,8 +47,7 @@ function isClaimable(issue: OnChainIssue): boolean {
   return true;
 }
 
-async function parseIssueNumber(githubProjectId: string): Promise<number | null> {
-  // githubProjectId format: "owner/repo#123" or just a number
+function parseIssueNumber(githubProjectId: string): number | null {
   const match = githubProjectId.match(/#(\d+)$/);
   if (match) return Number(match[1]);
   if (/^\d+$/.test(githubProjectId)) return Number(githubProjectId);
@@ -45,7 +62,7 @@ async function handleIssue(issue: OnChainIssue) {
     const upstream = parseRepoUrl(issue.repoLink);
 
     // fetch GitHub issue body for full context
-    const issueNumber = await parseIssueNumber(issue.githubProjectId);
+    const issueNumber = parseIssueNumber(issue.githubProjectId);
     let githubIssueBody = issue.description;
     if (issueNumber) {
       try {
@@ -60,7 +77,7 @@ async function handleIssue(issue: OnChainIssue) {
     log(`Sending issue to NVIDIA model for analysis...`);
     let solution = await solveIssue(issue, githubIssueBody);
 
-    // step 2: if solution has files, refine each one with actual file content
+    // step 2: if solution has files, refine with actual file content
     if (solution.files.length > 0) {
       log(`Refining solution for ${solution.files.length} file(s)...`);
       solution = await refineWithFileContent(
@@ -102,13 +119,13 @@ async function handleIssue(issue: OnChainIssue) {
     );
     log(`PR created: ${prUrl}`);
 
-    // step 6: claim reward on-chain (PR not merged yet — AVS will validate after merge)
+    // step 6: submit claim on-chain (AVS validates after merge)
     log(`Submitting claim for issue #${issue.id}...`);
     const receipt = await claimReward(issue.id, prUrl);
     log(`Claim submitted! tx: ${receipt.transactionHash}`);
 
   } catch (err) {
-    log(`Error handling issue #${issue.id}: ${String(err)}`);
+    log(`Error on issue #${issue.id}: ${String(err)}`);
   }
 }
 
@@ -118,7 +135,6 @@ async function poll() {
     const issues = await getAllIssues();
     const claimable = issues.filter(isClaimable);
     log(`Found ${claimable.length} claimable issue(s) out of ${issues.length} total`);
-
     for (const issue of claimable) {
       await handleIssue(issue);
     }
@@ -127,13 +143,38 @@ async function poll() {
   }
 }
 
+// ── graceful shutdown ─────────────────────────────────────────────────────────
+let timer: ReturnType<typeof setInterval>;
+
+function shutdown(signal: string) {
+  log(`Received ${signal}, shutting down gracefully...`);
+  clearInterval(timer);
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("uncaughtException", (err) => {
+  log(`Uncaught exception: ${String(err)}`);
+  // keep running — poll errors are non-fatal
+});
+process.on("unhandledRejection", (reason) => {
+  log(`Unhandled rejection: ${String(reason)}`);
+});
+
+// ── main ──────────────────────────────────────────────────────────────────────
 async function main() {
   log("iNMerg Worker Agent started");
   log(`Model: ${process.env.NVIDIA_MODEL ?? "meta/llama-3.3-70b-instruct"}`);
-  log(`Wallet: ${WORKER_ADDRESS || "(not set)"}`);
+  log(`Wallet: ${WORKER_ADDRESS}`);
+  log(`Poll interval: ${POLL_INTERVAL}ms`);
+  log(`Contract: ${process.env.ISSUE_ADDRESS}`);
 
   await poll();
-  setInterval(poll, POLL_INTERVAL);
+  timer = setInterval(poll, POLL_INTERVAL);
 }
 
-main();
+main().catch((err) => {
+  log(`Fatal startup error: ${String(err)}`);
+  process.exit(1);
+});
